@@ -1,39 +1,64 @@
 package com.example.artefactdetect
 
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
+import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import org.opencv.android.Utils
-import org.opencv.core.CvType
-import org.opencv.core.Mat
+import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
-import java.nio.ByteBuffer
 
 class CameraProcessor(
     private val artifactSimulator: ArtifactSimulator,
-    private val onFrameProcessed: (Bitmap) -> Unit,
-    private var artifactIntensity: Float = 0.5f
+    private val onFrameProcessed: (Bitmap) -> Unit
 ) : ImageAnalysis.Analyzer {
+
+    private var shouldAddArtifact = false
+
+    fun requestArtifact() {
+        shouldAddArtifact = true
+    }
 
     override fun analyze(image: ImageProxy) {
         try {
             val mat = image.toMat()
-            val processedMat = artifactSimulator.applyArtifacts(mat, artifactIntensity)
-            val resultBitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888)
-            Utils.matToBitmap(processedMat, resultBitmap)
+            val rotatedMat = Mat()
 
-            onFrameProcessed(resultBitmap)
+            // Исправленный поворот изображения
+            if (image.imageInfo.rotationDegrees == 90) {
+                Core.rotate(mat, rotatedMat, Core.ROTATE_90_CLOCKWISE)
+            } else {
+                // Если поворот не 90 градусов, используем стандартное преобразование
+                Core.rotate(mat, rotatedMat, Core.ROTATE_180)
+            }
+
+            // Зеркальное отражение по вертикали (опционально)
+            Core.flip(rotatedMat, rotatedMat, 1)
 
             mat.release()
+
+            if (shouldAddArtifact) {
+                artifactSimulator.addRandomRectArtifact(rotatedMat.size())
+                shouldAddArtifact = false
+            }
+
+            val processedMat = artifactSimulator.applyAllArtifacts(rotatedMat)
+
+            val resultBitmap = Bitmap.createBitmap(
+                processedMat.cols(),
+                processedMat.rows(),
+                Bitmap.Config.ARGB_8888
+            )
+            Utils.matToBitmap(processedMat, resultBitmap)
+            onFrameProcessed(resultBitmap)
+
+            rotatedMat.release()
             processedMat.release()
+        } catch (e: Exception) {
+            Log.e("CameraProcessor", "Error processing image", e)
         } finally {
             image.close()
         }
-    }
-
-    fun updateIntensity(newIntensity: Float) {
-        artifactIntensity = newIntensity.coerceIn(0f, 1f)
     }
 
     private fun ImageProxy.toMat(): Mat {

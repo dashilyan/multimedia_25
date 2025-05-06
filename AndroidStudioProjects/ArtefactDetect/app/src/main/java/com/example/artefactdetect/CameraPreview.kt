@@ -1,16 +1,22 @@
 package com.example.artefactdetect
 
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
+import android.graphics.Bitmap
+import android.util.Log
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 
 @Composable
@@ -22,10 +28,7 @@ fun CameraPreview(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val executor = remember { Executors.newSingleThreadExecutor() }
-
     val previewView = remember { PreviewView(context) }
-    val imageCapture = remember { ImageCapture.Builder().build() }
-
     val artifactSimulator = remember { ArtifactSimulator() }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
 
@@ -35,8 +38,14 @@ fun CameraPreview(
             onFrameProcessed = { processedBitmap ->
                 bitmap = processedBitmap
             }
-        ).also {
-            onImageProcessorCreated(it)
+        ).also { onImageProcessorCreated(it) }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2000)
+            cameraProcessor.requestArtifact()
+            Log.d("CameraPreview", "Artifacts count: ${artifactSimulator.getArtifactsCount()}")
         }
     }
 
@@ -62,11 +71,10 @@ fun CameraPreview(
                     lifecycleOwner,
                     cameraSelector,
                     preview,
-                    imageAnalysis,
-                    imageCapture
+                    imageAnalysis
                 )
-            } catch(exc: Exception) {
-                exc.printStackTrace()
+            } catch (exc: Exception) {
+                Log.e("CameraPreview", "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(context))
 

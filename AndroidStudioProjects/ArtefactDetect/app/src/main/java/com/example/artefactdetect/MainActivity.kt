@@ -13,10 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
+import org.opencv.android.OpenCVLoader
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,11 +26,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val opencvInitialized = remember { mutableStateOf(false) }
+            val cameraProcessor = remember { mutableStateOf<CameraProcessor?>(null) }
 
             LaunchedEffect(Unit) {
-                OpenCVLoader.init(context) { success ->
-                    opencvInitialized.value = success
-                }
+                // Инициализация OpenCV
+                val success = OpenCVLoader.initDebug()
+                opencvInitialized.value = success
             }
 
             if (!opencvInitialized.value) {
@@ -38,27 +40,33 @@ class MainActivity : ComponentActivity() {
                         text = "Инициализация OpenCV...",
                         color = Color.White,
                         modifier = Modifier.background(Color.Black.copy(alpha = 0.5f))
+                    )
                 }
             } else {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // Камера на весь экран
-                    CameraPreview(modifier = Modifier.fillMaxSize())
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(top = 48.dp)
-                        ) {
-                            Text(
-                                text = "Рабочая Д.А. Вариант 19",
-                                color = Color.White,
-                                fontSize = 24.sp,
-                                modifier = Modifier
-                                    .background(Color.Black.copy(alpha = 0.3f))
-                                    .padding(8.dp)
-                            )
+                    CameraPreview(
+                        modifier = Modifier.fillMaxSize(),
+                        onImageProcessorCreated = { processor ->
+                            cameraProcessor.value = processor
                         }
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 48.dp)
+                    ) {
+                        Text(
+                            text = "Рабочая Д.А. Вариант 19",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            modifier = Modifier
+                                .background(Color.Black.copy(alpha = 0.3f))
+                                .padding(8.dp)
+                        )
                     }
                 }
             }
         }
     }
+}
