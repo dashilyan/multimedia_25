@@ -1,0 +1,2 @@
+C:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\java\src\org\opencv\core\MatAt.kt
+C:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\java\src\org\opencv\core\MatMatMul.kt
