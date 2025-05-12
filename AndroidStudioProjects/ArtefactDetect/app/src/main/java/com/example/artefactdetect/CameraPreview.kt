@@ -45,7 +45,7 @@ fun CameraPreview(
         while (true) {
             delay(2000)
             cameraProcessor.requestArtifact()
-            Log.d("CameraPreview", "Artifacts count: ${artifactSimulator.getArtifactsCount()}")
+            //Log.d("CameraPreview", "Artifacts count: ${artifactSimulator.getArtifactsCount()}")
         }
     }
 

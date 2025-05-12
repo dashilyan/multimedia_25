@@ -29,9 +29,9 @@ class ArtifactSimulator {
         val artifactType = ArtifactType.values().random()
         val color = when(artifactType) {
             ArtifactType.SOLID_COLOR -> Scalar(
-                Random.nextDouble(0.0, 255.0),
-                Random.nextDouble(0.0, 255.0),
-                Random.nextDouble(0.0, 255.0)
+                Random.nextDouble(0.0, 32.0),
+                Random.nextDouble(0.0, 32.0),
+                Random.nextDouble(0.0, 32.0)
             )
             else -> Scalar(0.0, 0.0, 0.0) // Для других типов цвет не важен
         }
