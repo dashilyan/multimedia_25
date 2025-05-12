@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Using: C:\Users\dashilyan\AppData\Local\Android\Sdk\build-tools\35.0.0\aidl.exe -pC:\Users\dashilyan\AppData\Local\Android\Sdk\platforms\android-35\framework.aidl -oC:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\build\generated\aidl_source_output_dir\debug\out -IC:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\java\src -IC:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\src\debug\aidl -dC:\Users\DASHIL~1\AppData\Local\Temp\aidl5858551543420095115.d C:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\java\src\org\opencv\engine\OpenCVEngineInterface.aidl
+ * Using: C:\Users\dashilyan\AppData\Local\Android\Sdk\build-tools\35.0.0\aidl.exe -pC:\Users\dashilyan\AppData\Local\Android\Sdk\platforms\android-35\framework.aidl -oC:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\build\generated\aidl_source_output_dir\debug\out -IC:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\java\src -IC:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\src\debug\aidl -dC:\Users\DASHIL~1\AppData\Local\Temp\aidl6507463233146425291.d C:\Users\dashilyan\AndroidStudioProjects\ArtefactDetect\opencv\java\src\org\opencv\engine\OpenCVEngineInterface.aidl
  */
 package org.opencv.engine;
 /** Class provides a Java interface for OpenCV Engine Service. It's synchronous with native OpenCVEngine class. */

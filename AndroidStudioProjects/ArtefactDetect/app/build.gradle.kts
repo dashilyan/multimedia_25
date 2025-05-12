@@ -77,7 +77,9 @@ dependencies {
     implementation(project(":opencv"))
     // TensorFlow Lite
     implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.gpu)
+    implementation(libs.tensorflow.lite.task.vision)
 
     // Дополнительные полезные библиотеки
     implementation(libs.accompanist.permissions)
