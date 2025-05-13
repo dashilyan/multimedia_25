@@ -26,9 +26,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val opencvInitialized = remember { mutableStateOf(false) }
+            val cameraProcessor = remember { mutableStateOf<CameraProcessor?>(null) }
 
             LaunchedEffect(Unit) {
-                // Инициализация OpenCV (если все еще нужна для других функций)
+                // Инициализация OpenCV
                 val success = OpenCVLoader.initDebug()
                 opencvInitialized.value = success
             }
@@ -38,12 +39,17 @@ class MainActivity : ComponentActivity() {
                     Text(
                         text = "Инициализация OpenCV...",
                         color = Color.White,
-                        modifier = Modifier.background(Color.Black.copy(alpha = 0.5f)))
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.5f))
+                    )
                 }
             } else {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // Упрощенный вызов CameraPreview без обработчика процессора
-                    CameraPreview(modifier = Modifier.fillMaxSize())
+                    CameraPreview(
+                        modifier = Modifier.fillMaxSize(),
+                        onImageProcessorCreated = { processor ->
+                            cameraProcessor.value = processor
+                        }
+                    )
 
                     Box(
                         modifier = Modifier

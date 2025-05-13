@@ -2,38 +2,49 @@ package com.example.artefactdetect
 
 import android.graphics.Bitmap
 import android.util.Log
-import android.view.Surface
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.camera.core.ImageProxy
-import androidx.lifecycle.LifecycleOwner
-import org.opencv.android.Utils
-import org.opencv.core.Mat
-import org.opencv.core.Rect
+import kotlinx.coroutines.delay
+import java.util.concurrent.Executors
 
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
-    cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA,
+    onImageProcessorCreated: (CameraProcessor) -> Unit
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalContext.current as LifecycleOwner  // Получаем LifecycleOwner через LocalContext
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val executor = remember { Executors.newSingleThreadExecutor() }
     val previewView = remember { PreviewView(context) }
-    val boundingBoxes = remember { mutableStateListOf<Rect>() }
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    val cameraProcessor = remember {
+        CameraProcessor(
+            onFrameProcessed = { processedBitmap ->
+                bitmap = processedBitmap
+            }
+        ).also { onImageProcessorCreated(it) }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2000)
+            //Log.d("CameraPreview", "Artifacts count: ${artifactSimulator.getArtifactsCount()}")
+        }
+    }
 
     DisposableEffect(Unit) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
@@ -45,24 +56,20 @@ fun CameraPreview(
             }
 
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(android.util.Size(1280, 720))
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-
-            imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context)) { imageProxy ->
-                // Получаем Bitmap из ImageProxy
-                val bitmap = imageProxy.toBitmap()
-
-                // Обрабатываем кадр и получаем найденные артефакты
-                boundingBoxes.clear()
-                boundingBoxes.addAll(detectArtifacts(bitmap))
-
-                // Закрываем imageProxy после обработки
-                imageProxy.close()
-            }
+                .also {
+                    it.setAnalyzer(executor, cameraProcessor)
+                }
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis)
+                cameraProvider.bindToLifecycle(
+                    lifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageAnalysis
+                )
             } catch (exc: Exception) {
                 Log.e("CameraPreview", "Use case binding failed", exc)
             }
@@ -74,27 +81,18 @@ fun CameraPreview(
     }
 
     Box(modifier = modifier) {
-        // Отображаем видео поток
         AndroidView(
             factory = { previewView },
             modifier = Modifier.fillMaxSize()
         )
 
-        // Отображаем рамки поверх видео
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Рисуем прямоугольники вокруг артефактов
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                boundingBoxes.forEach { rect ->
-                    drawRect(
-                        color = Color.Green,  // Цвет рамки
-                        topLeft = androidx.compose.ui.geometry.Offset(rect.x.toFloat(), rect.y.toFloat()),
-                        size = androidx.compose.ui.geometry.Size(rect.width.toFloat(), rect.height.toFloat()),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 5f)  // Толщина линии
-                    )
-                }
-            }
+        bitmap?.let { processedBitmap ->
+            Image(
+                bitmap = processedBitmap.asImageBitmap(),
+                contentDescription = "Processed Preview",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
         }
     }
 }
-
-

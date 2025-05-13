@@ -83,7 +83,9 @@ dependencies {
 
     // Дополнительные полезные библиотеки
     implementation(libs.accompanist.permissions)
-    
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Тестирование
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
