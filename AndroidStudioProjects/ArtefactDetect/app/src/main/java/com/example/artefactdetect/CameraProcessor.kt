@@ -83,7 +83,7 @@ class CameraProcessor(
                         Log.e("CameraProcessor", "Error during fix stage", e)
                     }
                     // Удерживаем эффект фикса еще 500 мс, затем освобождаем
-                    handler.postDelayed({ isBusy = false }, 500L)
+                    handler.postDelayed({ isBusy = false }, 250L)
                     originalMat.release()
                 }, 200L)
             } else {
@@ -118,7 +118,7 @@ class CameraProcessor(
                 Imgproc.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 color,
-                2
+                1
             )
         }
     }

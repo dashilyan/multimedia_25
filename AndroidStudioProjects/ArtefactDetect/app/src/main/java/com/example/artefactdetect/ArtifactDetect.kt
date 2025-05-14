@@ -57,7 +57,7 @@ class ArtifactDetect {
                     if (stddevValue > noiseThreshold * 0.7) {
                         artifacts.add(DetectedArtifact(
                             rect,
-                            "Noise (\${stddevValue.roundToInt()})",
+                            "Noise",
                             stddevValue / noiseThreshold
                         ))
                     }
@@ -106,7 +106,7 @@ class ArtifactDetect {
                     artifacts.add(
                         DetectedArtifact(
                             rect,
-                            "Blur (\${stddevValue.roundToInt()})",
+                            "Blur",
                             confidence
                         )
                     )
@@ -137,7 +137,7 @@ class ArtifactDetect {
             if (avgH in 5.0..30.0 && avgV in 5.0..30.0 && abs(avgH - avgV) < 5) {
                 artifacts.add(DetectedArtifact(
                     Rect(0, 0, size.width.toInt(), size.height.toInt()),
-                    "Pixelization (\${avgH.roundToInt()}x\${avgV.roundToInt()} blocks)"
+                    "Pixelization"
                 ))
             }
         }
